@@ -34,3 +34,5 @@ steps:
 
 images:
 - 'gcr.io/summer-ranger-477910-v8/python-apps:latest'
+options:
+  logging: CLOUD_LOGGING_ONLY
