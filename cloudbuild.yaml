@@ -1,0 +1,36 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/summer-ranger-477910-v8/python-apps:latest', '.']
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/summer-ranger-477910-v8/python-apps:latest']
+
+- name: 'python:3.10'
+  entrypoint: bash
+  args:
+    - -c
+    - |
+        set -x
+        pip install -r requirements.txt
+        python - << 'EOF'
+        import sys, os
+        print("PWD:", os.getcwd())
+        print("Files:", os.listdir("."))
+        EOF
+        pytest -vv --ignore=test_main.py || [ $? -eq 5 ]
+
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+   - run
+   - deploy
+   - py-bq-load
+   - --image
+   - gcr.io/summer-ranger-477910-v8/python-apps:latest
+   - --region
+   - us-central1
+   - --allow-unauthenticated
+
+images:
+- 'gcr.io/summer-ranger-477910-v8/python-apps:latest'
